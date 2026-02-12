@@ -153,10 +153,6 @@ int fib3_p(unsigned int n, unsigned int p)
     return c;
 }
 
-//problem 3
-
-
-
 /* ================= Problem 3 ================= */
 
 char* evolve(const char* state) {
@@ -209,8 +205,9 @@ char* evolve(const char* state) {
 }
 
 char* last_state(const char* state) {
-    char* current = strdup(state);
+    char* current = malloc(strlen(state) + 1);
     if (!current) return NULL;
+    strcpy(current, state);
 
     while (1) {
         char* next = evolve(current);
