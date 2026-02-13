@@ -3,7 +3,7 @@
 #include <string.h>
 #include "assignment2.h"
 
-/* ===================== Problem 1 ===================== */
+//problem 1
 
 int add_user_password(const char* file_name,
                       const char* username,
@@ -12,49 +12,36 @@ int add_user_password(const char* file_name,
     size_t username_len = strlen(username);
     size_t password_len = strlen(password);
     
-    // First, check if user already exists
     FILE* file = fopen(file_name, "rb");
     if (file != NULL) {
         size_t ulen, plen;
-        while (1) {
-            size_t read_count = fread(&ulen, sizeof(size_t), 1, file);
-            if (read_count != 1) break;
-            
-            read_count = fread(&plen, sizeof(size_t), 1, file);
-            if (read_count != 1) break;
-            
+        while (fread(&ulen, sizeof(size_t), 1, file) == 1 &&
+               fread(&plen, sizeof(size_t), 1, file) == 1) {
             char* u = malloc(ulen);
             if (!u) {
                 fclose(file);
                 return -1;
             }
             
-            read_count = fread(u, 1, ulen, file);
-            if (read_count != ulen) {
+            if (fread(u, 1, ulen, file) != ulen) {
                 free(u);
                 fclose(file);
                 return -1;
             }
             
-            // Compare username
             if (ulen == username_len && memcmp(u, username, ulen) == 0) {
                 free(u);
                 fclose(file);
-                return 0; // user exists
+                return 0;  
             }
             
             free(u);
-            
-            // Skip the password
-            if (fseek(file, plen, SEEK_CUR) != 0) {
-                fclose(file);
-                return -1;
-            }
+            fseek(file, plen, SEEK_CUR);  
         }
         fclose(file);
     }
     
-    // User doesn't exist, add it
+   
     file = fopen(file_name, "ab");
     if (!file) return -1;
     
@@ -64,7 +51,7 @@ int add_user_password(const char* file_name,
     fwrite(password, 1, password_len, file);
     
     fclose(file);
-    return 1;
+    return 1;  
 }
 
 int check_user_password(const char* file_name,
@@ -72,19 +59,14 @@ int check_user_password(const char* file_name,
                         const char* password)
 {
     FILE* file = fopen(file_name, "rb");
-    if (!file) return -1;
+    if (!file) return -1;  
     
     size_t username_len = strlen(username);
     size_t password_len = strlen(password);
     size_t ulen, plen;
     
-    while (1) {
-        size_t read_count = fread(&ulen, sizeof(size_t), 1, file);
-        if (read_count != 1) break;
-        
-        read_count = fread(&plen, sizeof(size_t), 1, file);
-        if (read_count != 1) break;
-        
+    while (fread(&ulen, sizeof(size_t), 1, file) == 1 &&
+           fread(&plen, sizeof(size_t), 1, file) == 1) {
         char* u = malloc(ulen);
         char* p = malloc(plen);
         if (!u || !p) {
@@ -94,44 +76,33 @@ int check_user_password(const char* file_name,
             return -1;
         }
         
-        read_count = fread(u, 1, ulen, file);
-        if (read_count != ulen) {
+        if (fread(u, 1, ulen, file) != ulen ||
+            fread(p, 1, plen, file) != plen) {
             free(u);
             free(p);
             fclose(file);
             return -1;
         }
         
-        read_count = fread(p, 1, plen, file);
-        if (read_count != plen) {
-            free(u);
-            free(p);
-            fclose(file);
-            return -1;
-        }
-        
-        // Check username
         if (ulen == username_len && memcmp(u, username, ulen) == 0) {
-            // Username matches, check password
             if (plen == password_len && memcmp(p, password, plen) == 0) {
                 free(u);
                 free(p);
                 fclose(file);
-                return 1;
+                return 1;   
             } else {
                 free(u);
                 free(p);
                 fclose(file);
-                return -3;
+                return -3;  
             }
         }
-        
         free(u);
         free(p);
     }
     
     fclose(file);
-    return -2;
+    return -2;  // username not found
 }
 
 /* ===================== Problem 2 ===================== */
